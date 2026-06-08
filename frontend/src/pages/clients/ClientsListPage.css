@@ -1,0 +1,37 @@
+.clients-page {
+  padding: var(--spacing-6);
+  animation: fade-in var(--transition-normal);
+}
+
+.clients-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.clients-page__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.clients-page__actions {
+  display: flex;
+  gap: var(--spacing-4);
+}
+
+.clients-page__filters {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  background-color: var(--color-surface);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.clients-page__search {
+  flex: 1;
+  max-width: 400px;
+}

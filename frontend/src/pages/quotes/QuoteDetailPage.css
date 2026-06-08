@@ -1,0 +1,23 @@
+.quote-detail {
+  padding: var(--spacing-6);
+  animation: fade-in var(--transition-normal);
+}
+
+.quote-detail__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.quote-detail__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+}
+
+.quote-detail__subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}

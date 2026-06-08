@@ -1,0 +1,22 @@
+.quotes-page {
+  padding: var(--spacing-6);
+  animation: fade-in var(--transition-normal);
+}
+
+.quotes-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.quotes-page__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.quotes-page__actions {
+  display: flex;
+  gap: var(--spacing-4);
+}

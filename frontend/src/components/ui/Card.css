@@ -1,0 +1,36 @@
+/* Componente Card */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: all var(--transition-base);
+}
+
+/* Variantes */
+.card--flat {
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+}
+
+.card--elevated {
+  box-shadow: var(--shadow-sm);
+  border: 1px solid transparent;
+}
+
+.card--interactive {
+  box-shadow: var(--shadow-sm);
+  border: 1px solid transparent;
+}
+.card--interactive:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Clickeable */
+.card--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+.card--clickable:active {
+  transform: scale(0.99);
+}

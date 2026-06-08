@@ -1,0 +1,38 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.layout__main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.layout__main--collapsed {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+.layout__content {
+  flex: 1;
+  padding: var(--space-6);
+  background: var(--color-bg);
+}
+
+/* Overlay para mobile */
+.layout__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 99;
+  animation: overlayFadeIn 200ms ease;
+}
+
+@media (max-width: 768px) {
+  .layout__main,
+  .layout__main--collapsed {
+    margin-left: 0;
+  }
+}

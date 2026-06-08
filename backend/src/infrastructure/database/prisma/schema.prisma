@@ -1,0 +1,321 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  OPERADOR
+}
+
+enum OrderStatus {
+  RECIBIDO
+  ESPERANDO_DISENO
+  ESPERANDO_CONFIRMACION
+  EN_PRODUCCION
+  TERMINADO
+  ENTREGADO
+  CANCELADO
+}
+
+enum QuoteStatus {
+  PENDIENTE
+  ACEPTADO
+  RECHAZADO
+  VENCIDO
+}
+
+enum PaymentMethod {
+  EFECTIVO
+  TRANSFERENCIA
+}
+
+enum InvoiceType {
+  FACTURA_A
+  FACTURA_B
+  FACTURA_C
+  NOTA_CREDITO_A
+  NOTA_CREDITO_B
+  NOTA_CREDITO_C
+}
+
+enum IvaCondition {
+  RESPONSABLE_INSCRIPTO
+  MONOTRIBUTISTA
+  CONSUMIDOR_FINAL
+  EXENTO
+}
+
+enum PricingType {
+  FIJO
+  CALCULADO
+}
+
+enum AccountMovementType {
+  CARGO
+  PAGO
+}
+
+enum NotificationType {
+  PEDIDO_NUEVO
+  CAMBIO_ESTADO
+  PEDIDO_URGENTE
+  PAGO_RECIBIDO
+  PEDIDO_LISTO
+}
+
+model User {
+  id            String         @id @default(uuid()) @db.Uuid
+  username      String         @unique
+  password_hash String
+  name          String
+  role          Role           @default(OPERADOR)
+  active        Boolean        @default(true)
+  created_at    DateTime       @default(now())
+
+  orders        Order[]
+  quotes        Quote[]
+  notifications Notification[]
+  invoices      Invoice[]
+
+  @@map("users")
+}
+
+model Client {
+  id                  String       @id @default(uuid()) @db.Uuid
+  name                String
+  phone               String?
+  email               String?
+  address             String?
+  cuit                String?
+  fiscal_name         String?
+  iva_condition       IvaCondition @default(CONSUMIDOR_FINAL)
+  has_current_account Boolean      @default(false)
+  credit_limit        Decimal?     @db.Decimal(10, 2)
+  tracking_token      String       @unique @default(uuid())
+  notes               String?
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+
+  orders              Order[]
+  quotes              Quote[]
+  invoices            Invoice[]
+  payments            Payment[]
+  account_movements   AccountMovement[]
+
+  @@map("clients")
+}
+
+model ProductCategory {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique
+  description String?
+  sort_order  Int       @default(0)
+  active      Boolean   @default(true)
+
+  products    Product[]
+
+  @@map("product_categories")
+}
+
+model Product {
+  id            String          @id @default(uuid()) @db.Uuid
+  category_id   String          @db.Uuid
+  name          String
+  description   String?
+  pricing_type  PricingType     @default(FIJO)
+  base_price    Decimal         @db.Decimal(10, 2)
+  pricing_rules Json?
+  active        Boolean         @default(true)
+  created_at    DateTime        @default(now())
+
+  category      ProductCategory @relation(fields: [category_id], references: [id])
+  orders        Order[]
+  quote_items   QuoteItem[]
+
+  @@map("products")
+}
+
+model Order {
+  id                    String      @id @default(uuid()) @db.Uuid
+  order_number          String      @unique
+  client_id             String      @db.Uuid
+  created_by            String      @db.Uuid
+  product_id            String      @db.Uuid
+  product_description   String
+  quantity              Int
+  specifications        Json?
+  unit_price            Decimal     @db.Decimal(10, 2)
+  status                OrderStatus @default(RECIBIDO)
+  delivery_date         DateTime?   @db.Date
+  notes                 String?
+  design_file_reference String?
+  subtotal              Decimal     @db.Decimal(10, 2)
+  tax_amount            Decimal     @default(0) @db.Decimal(10, 2)
+  total                 Decimal     @db.Decimal(10, 2)
+  paid_amount           Decimal     @default(0) @db.Decimal(10, 2)
+  charged_to_account    Boolean     @default(false)
+  created_at            DateTime    @default(now())
+  updated_at            DateTime    @updatedAt
+
+  client                Client      @relation(fields: [client_id], references: [id])
+  creator               User        @relation(fields: [created_by], references: [id])
+  product               Product     @relation(fields: [product_id], references: [id])
+  
+  status_history        OrderStatusHistory[]
+  payments              Payment[]
+  invoices              Invoice[]
+  account_movements     AccountMovement[]
+
+  @@map("orders")
+}
+
+model OrderStatusHistory {
+  id          String      @id @default(uuid()) @db.Uuid
+  order_id    String      @db.Uuid
+  changed_by  String?     @db.Uuid
+  from_status OrderStatus
+  to_status   OrderStatus
+  notes       String?
+  created_at  DateTime    @default(now())
+
+  order       Order       @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@map("order_status_history")
+}
+
+model Quote {
+  id                 String      @id @default(uuid()) @db.Uuid
+  quote_number       String      @unique
+  client_id          String      @db.Uuid
+  created_by         String      @db.Uuid
+  status             QuoteStatus @default(PENDIENTE)
+  valid_until        DateTime?   @db.Date
+  notes              String?
+  subtotal           Decimal     @db.Decimal(10, 2)
+  tax_amount         Decimal     @default(0) @db.Decimal(10, 2)
+  total              Decimal     @db.Decimal(10, 2)
+  converted_order_id String?     @db.Uuid
+  created_at         DateTime    @default(now())
+
+  client             Client      @relation(fields: [client_id], references: [id])
+  creator            User        @relation(fields: [created_by], references: [id])
+  items              QuoteItem[]
+
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id             String  @id @default(uuid()) @db.Uuid
+  quote_id       String  @db.Uuid
+  product_id     String  @db.Uuid
+  description    String?
+  quantity       Int
+  specifications Json?
+  unit_price     Decimal @db.Decimal(10, 2)
+  subtotal       Decimal @db.Decimal(10, 2)
+
+  quote          Quote   @relation(fields: [quote_id], references: [id], onDelete: Cascade)
+  product        Product @relation(fields: [product_id], references: [id])
+
+  @@map("quote_items")
+}
+
+model Payment {
+  id            String        @id @default(uuid()) @db.Uuid
+  order_id      String?       @db.Uuid
+  client_id     String        @db.Uuid
+  registered_by String?       @db.Uuid
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  reference     String?
+  notes         String?
+  created_at    DateTime      @default(now())
+
+  order         Order?        @relation(fields: [order_id], references: [id])
+  client        Client        @relation(fields: [client_id], references: [id])
+  
+  account_movements AccountMovement[]
+
+  @@map("payments")
+}
+
+model AccountMovement {
+  id            String              @id @default(uuid()) @db.Uuid
+  client_id     String              @db.Uuid
+  order_id      String?             @db.Uuid
+  payment_id    String?             @db.Uuid
+  type          AccountMovementType
+  amount        Decimal             @db.Decimal(10, 2)
+  balance_after Decimal             @db.Decimal(10, 2)
+  description   String?
+  registered_by String?             @db.Uuid
+  created_at    DateTime            @default(now())
+
+  client        Client              @relation(fields: [client_id], references: [id])
+  order         Order?              @relation(fields: [order_id], references: [id])
+  payment       Payment?            @relation(fields: [payment_id], references: [id])
+
+  @@map("account_movements")
+}
+
+model Invoice {
+  id             String      @id @default(uuid()) @db.Uuid
+  order_id       String      @db.Uuid
+  client_id      String      @db.Uuid
+  created_by     String      @db.Uuid
+  invoice_type   InvoiceType
+  sale_point     Int
+  invoice_number BigInt
+  cae            BigInt?
+  cae_expiration DateTime?   @db.Date
+  net_amount     Decimal     @db.Decimal(10, 2)
+  tax_amount     Decimal     @db.Decimal(10, 2)
+  total          Decimal     @db.Decimal(10, 2)
+  arca_request   Json?
+  arca_response  Json?
+  created_at     DateTime    @default(now())
+
+  order          Order       @relation(fields: [order_id], references: [id])
+  client         Client      @relation(fields: [client_id], references: [id])
+  creator        User        @relation(fields: [created_by], references: [id])
+
+  @@map("invoices")
+}
+
+model Notification {
+  id         String           @id @default(uuid()) @db.Uuid
+  user_id    String           @db.Uuid
+  type       NotificationType
+  title      String
+  message    String
+  order_id   String?          @db.Uuid
+  read       Boolean          @default(false)
+  created_at DateTime         @default(now())
+
+  user       User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model BusinessConfig {
+  id              String   @id @default(uuid()) @db.Uuid
+  business_name   String
+  cuit            String?
+  iva_condition   String?
+  address         String?
+  phone           String?
+  email           String?
+  logo_path       String?
+  arca_sale_point Int?
+  arca_cert       String?
+  arca_key        String?
+  arca_production Boolean  @default(false)
+  updated_at      DateTime @updatedAt
+
+  @@map("business_config")
+}
