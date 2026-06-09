@@ -1,0 +1,117 @@
+/* InvoicePrintView.css */
+
+.invoice-print-view {
+  background: white;
+  color: black;
+  width: 21cm;
+  height: 14.8cm; /* A5 landscape */
+  padding: 1cm;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  margin: 0 auto;
+}
+
+@media print {
+  @page {
+    size: A5 landscape;
+    margin: 0;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  
+  .invoice-print-view, .invoice-print-view * {
+    visibility: visible;
+  }
+  
+  .invoice-print-view {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+
+.invoice-print__header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid black;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.invoice-print__type-box {
+  border: 2px solid black;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.invoice-print__type-letter {
+  font-size: 1.5rem;
+  border-bottom: 1px solid black;
+  width: 100%;
+  text-align: center;
+}
+
+.invoice-print__type-code {
+  font-size: 0.6rem;
+}
+
+.invoice-print__client {
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.invoice-print__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.invoice-print__table th,
+.invoice-print__table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.invoice-print__table th {
+  background-color: #f0f0f0;
+}
+
+.invoice-print__totals {
+  text-align: right;
+  margin-bottom: 15px;
+}
+
+.invoice-print__total-amount {
+  font-size: 1.2rem;
+  border-top: 2px solid black;
+  padding-top: 5px;
+  display: inline-block;
+}
+
+.invoice-print__footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+}
+
+.invoice-print__qr img {
+  width: 100px;
+  height: 100px;
+}
+
+.invoice-print__afip-data {
+  font-size: 0.85rem;
+  font-weight: bold;
+}

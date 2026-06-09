@@ -77,6 +77,7 @@ export interface OrderResponseDTO {
   total: number;
   paidAmount: number;
   chargedToAccount: boolean;
+  invoiceId: string | null;
   createdAt: string;
   updatedAt: string;
   // Relaciones opcionales (incluidas en detalle)

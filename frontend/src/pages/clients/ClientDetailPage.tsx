@@ -10,6 +10,7 @@ import { clientService, type ClientDetailResult } from '../../services/clientSer
 import { accountService } from '../../services/accountService';
 import { ClientFormModal } from './ClientFormModal';
 import { PaymentFormModal } from '../payments/PaymentFormModal';
+import { GenerateInvoiceModal } from '../invoices/GenerateInvoiceModal';
 import './ClientDetailPage.css';
 
 export const ClientDetailPage: React.FC = () => {
@@ -21,6 +22,7 @@ export const ClientDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   const fetchDetail = async () => {
     if (!id) return;
@@ -63,6 +65,8 @@ export const ClientDetailPage: React.FC = () => {
   }
 
   const { client, orders, ordersSummary } = data;
+  
+  const unInvoicedOrders = orders.filter(o => !o.invoiceId && (o.status === 'TERMINADO' || o.status === 'ENTREGADO'));
 
   const orderColumns = [
     { header: 'Pedido', accessor: 'orderNumber' as keyof Order },
@@ -208,7 +212,12 @@ export const ClientDetailPage: React.FC = () => {
           </div>
 
           <Card title="Historial de Pedidos">
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--spacing-4)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--spacing-4)', gap: 'var(--spacing-3)' }}>
+              {unInvoicedOrders.length > 0 && (
+                <Button variant="secondary" onClick={() => setIsInvoiceModalOpen(true)}>
+                  Generar Factura ({unInvoicedOrders.length})
+                </Button>
+              )}
               <Button variant="primary" onClick={() => navigate(`/pedidos/nuevo?clientId=${client.id}`)}>
                 + Nuevo Pedido
               </Button>
@@ -234,6 +243,14 @@ export const ClientDetailPage: React.FC = () => {
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         clientId={client.id}
+        onSuccess={fetchDetail}
+      />
+
+      <GenerateInvoiceModal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        clientId={client.id}
+        unInvoicedOrders={unInvoicedOrders}
         onSuccess={fetchDetail}
       />
     </div>

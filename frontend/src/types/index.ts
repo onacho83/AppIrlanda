@@ -119,6 +119,7 @@ export interface Order {
   total: number;
   paidAmount: number;
   chargedToAccount: boolean;
+  invoiceId?: string;
   statusHistory?: OrderStatusHistory[];
   createdAt: string;
   updatedAt: string;
@@ -140,6 +141,23 @@ export interface Payment {
   reference?: string;
   notes?: string;
   createdAt: string;
+}
+
+export interface Invoice {
+  id: string;
+  clientId: string;
+  createdBy: string;
+  invoiceType: 'FACTURA_A' | 'FACTURA_B' | 'FACTURA_C' | 'NOTA_CREDITO_A' | 'NOTA_CREDITO_B' | 'NOTA_CREDITO_C';
+  salePoint: number;
+  invoiceNumber: string;
+  cae?: string;
+  caeExpiration?: string;
+  netAmount: number;
+  taxAmount: number;
+  total: number;
+  qrData?: string;
+  createdAt: string;
+  orders?: Order[];
 }
 
 export interface AccountMovement {

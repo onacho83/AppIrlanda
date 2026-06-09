@@ -39,6 +39,8 @@ const startServer = async () => {
     server.register((await import('./routes/quoteRoutes')).quoteRoutes, { prefix: '/api/quotes' });
     server.register((await import('./routes/paymentRoutes')).paymentRoutes, { prefix: '/api/payments' });
     server.register((await import('./routes/accountRoutes')).accountRoutes, { prefix: '/api/accounts' });
+    server.register((await import('./routes/invoiceRoutes')).invoiceRoutes, { prefix: '/api/invoices' });
+    server.register((await import('./routes/businessConfigRoutes')).businessConfigRoutes, { prefix: '/api/config' });
 
     // 4. Conexión a BD
     await prisma.$connect();

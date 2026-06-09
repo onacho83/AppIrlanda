@@ -27,7 +27,7 @@ export const UpdateProductSchema = z.object({
 /** Schema para filtros de listado de productos (query params) */
 export const ProductFiltersSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(1000).default(20),
   categoryId: z.string().uuid('ID de categoría inválido').optional(),
   active: z
     .enum(['true', 'false'])

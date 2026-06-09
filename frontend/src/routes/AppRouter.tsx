@@ -4,7 +4,6 @@ import { MainLayout } from '../components/layout/MainLayout';
 import { LoginPage } from '../pages/auth/LoginPage';
 import {
   DashboardPage,
-  InvoicesPage,
   CalendarPage,
   ReportsPage,
   SettingsPage,
@@ -18,6 +17,9 @@ import { NewOrderPage } from '../pages/orders/NewOrderPage';
 import { EditOrderPage } from '../pages/orders/EditOrderPage';
 import { PaymentsPage } from '../pages/payments/PaymentsPage';
 import { QuotesListPage } from '../pages/quotes/QuotesListPage';
+import { NewQuotePage } from '../pages/quotes/NewQuotePage';
+import { QuoteDetailPage } from '../pages/quotes/QuoteDetailPage';
+import { InvoicesPage } from '../pages/invoices/InvoicesPage';
 import { useAuthStore } from '../store/authStore';
 
 /** Ruta protegida: redirige a /login si no autenticado */
@@ -35,7 +37,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-/** Ruta de login: redirige si ya está autenticado */
+/** Ruta de login: redirige si ya estǭ autenticado */
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
   if (isAuthenticated) {
@@ -48,7 +50,7 @@ export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Login público */}
+        {/* Login pǧblico */}
         <Route
           path="/login"
           element={
@@ -72,6 +74,8 @@ export const AppRouter: React.FC = () => {
           <Route path="/pedidos/:id" element={<OrderDetailPage />} />
           <Route path="/pedidos/:id/editar" element={<EditOrderPage />} />
           <Route path="/presupuestos" element={<QuotesListPage />} />
+          <Route path="/presupuestos/nuevo" element={<NewQuotePage />} />
+          <Route path="/presupuestos/:id" element={<QuoteDetailPage />} />
           <Route path="/clientes" element={<ClientsListPage />} />
           <Route path="/clientes/:id" element={<ClientDetailPage />} />
           <Route path="/catalogo" element={<CatalogPage />} />
@@ -82,7 +86,7 @@ export const AppRouter: React.FC = () => {
           <Route path="/configuracion" element={<AdminRoute><SettingsPage /></AdminRoute>} />
         </Route>
 
-        {/* Redirección por defecto */}
+        {/* Redireccin por defecto */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

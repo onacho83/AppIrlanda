@@ -105,16 +105,18 @@ export const CatalogPage: React.FC = () => {
                 </div>
               ) : (
                 categories.map(category => (
-                  <button
-                    key={category.id}
-                    className={`catalog-category-item ${activeCategoryId === category.id ? 'catalog-category-item--active' : ''}`}
-                    onClick={() => setActiveCategoryId(category.id)}
-                  >
-                    <span>{category.name}</span>
-                    <div className="catalog-category-item__actions">
-                      <button onClick={(e) => handleEditCategory(e, category)} aria-label="Editar">✏️</button>
-                    </div>
-                  </button>
+                <div
+                  key={category.id}
+                  className={`catalog-category-item ${activeCategoryId === category.id ? 'catalog-category-item--active' : ''}`}
+                  onClick={() => setActiveCategoryId(category.id)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <span>{category.name}</span>
+                  <div className="catalog-category-item__actions">
+                    <button onClick={(e) => handleEditCategory(e, category)} aria-label="Editar">✏️</button>
+                  </div>
+                </div>
                 ))
               )}
             </div>

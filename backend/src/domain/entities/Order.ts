@@ -34,7 +34,8 @@ export class Order {
     public paidAmount: number,
     public chargedToAccount: boolean,
     public readonly createdAt: Date,
-    public readonly updatedAt: Date
+    public readonly updatedAt: Date,
+    public invoiceId: string | null = null
   ) {}
 }
 

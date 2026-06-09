@@ -30,8 +30,8 @@ services:
       DATABASE_URL: postgresql://${DB_USER:-imprenta_user}:${DB_PASSWORD:-imprenta_secret_2026}@db:5432/${DB_NAME:-imprenta}?schema=public
       JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_change_in_production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super_secret_refresh_key_change_in_production}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-30d}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-60d}
       PORT: 3001
       NODE_ENV: ${NODE_ENV:-development}
       ARCA_PRODUCTION: "false"

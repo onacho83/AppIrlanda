@@ -180,7 +180,8 @@ export class PrismaOrderRepository implements IOrderRepository {
       Number(data.paid_amount),
       data.charged_to_account,
       data.created_at,
-      data.updated_at
+      data.updated_at,
+      data.invoice_id
     );
   }
 }
