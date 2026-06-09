@@ -7,6 +7,12 @@ import { Spinner } from '../../components/ui/Spinner';
 import type { Order, OrderStatus } from '../../types';
 import { orderService } from '../../services/orderService';
 import { PaymentFormModal } from '../payments/PaymentFormModal';
+import { invoiceService } from '../../services/invoiceService';
+import { DownloadInvoicePdfButton } from '../invoices/DownloadInvoicePdfButton';
+import { GenerateInvoiceModal } from '../invoices/GenerateInvoiceModal';
+import type { Invoice } from '../../types';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import './OrderDetailPage.css';
 
 export const OrderDetailPage: React.FC = () => {
@@ -16,6 +22,10 @@ export const OrderDetailPage: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const printRef = React.useRef<HTMLDivElement>(null);
 
   const fetchOrder = async () => {
     if (!id) return;
@@ -23,6 +33,16 @@ export const OrderDetailPage: React.FC = () => {
       setLoading(true);
       const result = await orderService.getById(id);
       setOrder(result);
+      if (result.invoiceId) {
+        try {
+          const inv = await invoiceService.getInvoiceById(result.invoiceId);
+          setInvoice(inv);
+        } catch (invError) {
+          console.error('Failed to fetch invoice:', invError);
+        }
+      } else {
+        setInvoice(null);
+      }
     } catch (error) {
       console.error('Failed to fetch order details:', error);
     } finally {
@@ -41,6 +61,32 @@ export const OrderDetailPage: React.FC = () => {
       fetchOrder();
     } catch (error) {
       console.error('Failed to update status:', error);
+    }
+  };
+
+  const handlePrintPdf = async () => {
+    if (!printRef.current || !order) return;
+    try {
+      setIsPrinting(true);
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a5'
+      });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Pedido_${order.orderNumber}.pdf`);
+    } catch (err) {
+      console.error('Error generando PDF del pedido', err);
+    } finally {
+      setIsPrinting(false);
     }
   };
 
@@ -72,7 +118,9 @@ export const OrderDetailPage: React.FC = () => {
           <StatusBadge status={order.status} />
         </div>
         <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
-          <Button variant="secondary" onClick={() => window.print()}>🖨️ Imprimir</Button>
+          <Button variant="secondary" onClick={handlePrintPdf} disabled={isPrinting}>
+            {isPrinting ? <Spinner size="sm" /> : '🖨️ Descargar PDF'}
+          </Button>
           <Button variant="secondary" onClick={() => navigate(`/pedidos/${id}/editar`)}>Editar Pedido</Button>
         </div>
       </div>
@@ -231,6 +279,24 @@ export const OrderDetailPage: React.FC = () => {
                   </Button>
                 </div>
               )}
+
+              <div style={{ marginTop: 'var(--spacing-4)', paddingTop: 'var(--spacing-4)', borderTop: '1px solid var(--color-border)' }}>
+                <h4 style={{ marginBottom: 'var(--spacing-3)', fontSize: '0.875rem' }}>Facturación AFIP</h4>
+                {invoice ? (
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                     <div style={{ fontSize: '0.875rem', color: 'var(--color-success)', fontWeight: 500 }}>Factura generada: {invoice.invoiceNumber}</div>
+                     <DownloadInvoicePdfButton invoice={invoice} />
+                   </div>
+                ) : (order.status === 'TERMINADO' || order.status === 'ENTREGADO') ? (
+                   <Button variant="secondary" style={{ width: '100%' }} onClick={() => setIsInvoiceModalOpen(true)}>
+                     Generar Factura AFIP
+                   </Button>
+                ) : (
+                   <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+                     El pedido debe estar terminado o entregado para facturar.
+                   </div>
+                )}
+              </div>
             </div>
           </Card>
         </div>
@@ -245,8 +311,16 @@ export const OrderDetailPage: React.FC = () => {
         onSuccess={fetchOrder}
       />
 
-      <div className="print-only">
-        <div className="print-ticket">
+      <GenerateInvoiceModal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        clientId={order.clientId}
+        unInvoicedOrders={[order]}
+        onSuccess={fetchOrder}
+      />
+
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+        <div ref={printRef} className="print-ticket" style={{ width: '210mm', height: '148mm', background: 'white', color: 'black', padding: '10mm', boxSizing: 'border-box' }}>
           <div className="print-main">
             <h2>Imprenta Irlanda</h2>
             <h3>Pedido #{order.orderNumber}</h3>

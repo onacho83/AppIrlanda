@@ -6,8 +6,8 @@ import {
   DashboardPage,
   CalendarPage,
   ReportsPage,
-  SettingsPage,
 } from '../pages/PlaceholderPages';
+import { SettingsPage } from '../pages/settings/SettingsPage';
 import { ClientsListPage } from '../pages/clients/ClientsListPage';
 import { ClientDetailPage } from '../pages/clients/ClientDetailPage';
 import { CatalogPage } from '../pages/catalog/CatalogPage';

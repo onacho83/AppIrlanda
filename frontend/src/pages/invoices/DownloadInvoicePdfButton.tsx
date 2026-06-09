@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { InvoicePrintView } from './InvoicePrintView';
 import { clientService } from '../../services/clientService';
-import { orderService } from '../../services/orderService';
+import { configService, type BusinessConfig } from '../../services/configService';
 import type { Invoice, Client, Order } from '../../types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -13,11 +13,13 @@ interface DownloadInvoicePdfButtonProps {
 
 export const DownloadInvoicePdfButton: React.FC<DownloadInvoicePdfButtonProps> = ({ invoice }) => {
   const [loading, setLoading] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
+  const printRefOriginal = useRef<HTMLDivElement>(null);
+  const printRefDuplicate = useRef<HTMLDivElement>(null);
   
   // Data for rendering
   const [client, setClient] = useState<Client | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [config, setConfig] = useState<BusinessConfig | null>(null);
 
   const handleDownload = async () => {
     try {
@@ -26,37 +28,51 @@ export const DownloadInvoicePdfButton: React.FC<DownloadInvoicePdfButtonProps> =
       // 1. Obtener datos necesarios
       const clientDetail = await clientService.getById(invoice.clientId);
       const invoiceOrders = clientDetail.orders.filter(o => o.invoiceId === invoice.id);
+      const configData = await configService.getConfig();
       
       setClient(clientDetail.client);
       setOrders(invoiceOrders);
+      setConfig(configData);
 
       // Esperar al siguiente tick de React para que el componente oculto se renderice
       setTimeout(async () => {
-        if (!printRef.current) {
+        if (!printRefOriginal.current || !printRefDuplicate.current) {
           setLoading(false);
           return;
         }
 
         try {
           // 2. Capturar con html2canvas
-          const canvas = await html2canvas(printRef.current, {
+          const canvasOriginal = await html2canvas(printRefOriginal.current, {
+            scale: 2,
+            useCORS: true,
+            logging: false
+          });
+          const canvasDuplicate = await html2canvas(printRefDuplicate.current, {
             scale: 2,
             useCORS: true,
             logging: false
           });
 
-          // 3. Crear PDF (A5 landscape es approx 210x148 mm)
-          const imgData = canvas.toDataURL('image/png');
+          // 3. Crear PDF (A5 portrait es approx 148x210 mm)
           const pdf = new jsPDF({
-            orientation: 'landscape',
+            orientation: 'portrait',
             unit: 'mm',
             format: 'a5'
           });
 
           const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+          const pdfHeight = (canvasOriginal.height * pdfWidth) / canvasOriginal.width;
 
-          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          // Página 1: Original
+          const imgDataOrg = canvasOriginal.toDataURL('image/png');
+          pdf.addImage(imgDataOrg, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          
+          // Página 2: Duplicado
+          pdf.addPage();
+          const imgDataDup = canvasDuplicate.toDataURL('image/png');
+          pdf.addImage(imgDataDup, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
           pdf.save(`Factura_${invoice.invoiceNumber}.pdf`);
         } catch (err) {
           console.error("Error al generar PDF:", err);
@@ -80,9 +96,14 @@ export const DownloadInvoicePdfButton: React.FC<DownloadInvoicePdfButtonProps> =
       {/* Renderizado oculto para la captura del PDF */}
       <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
         {client && (
-          <div ref={printRef}>
-            <InvoicePrintView invoice={invoice} client={client} orders={orders} />
-          </div>
+          <>
+            <div ref={printRefOriginal}>
+              <InvoicePrintView invoice={invoice} client={client} orders={orders} config={config} copyType="ORIGINAL" />
+            </div>
+            <div ref={printRefDuplicate}>
+              <InvoicePrintView invoice={invoice} client={client} orders={orders} config={config} copyType="DUPLICADO" />
+            </div>
+          </>
         )}
       </div>
     </>

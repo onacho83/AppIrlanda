@@ -13,6 +13,8 @@ export interface BusinessConfig {
   arcaCert: string | null;
   arcaKey: string | null;
   arcaProduction: boolean;
+  grossIncome: string | null;
+  activityStartDate: string | null;
 }
 
 export const configService = {

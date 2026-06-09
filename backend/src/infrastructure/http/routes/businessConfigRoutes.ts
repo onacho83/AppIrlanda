@@ -17,17 +17,19 @@ export async function businessConfigRoutes(fastify: FastifyInstance) {
   // Actualizar configuracin (Solo ADMIN)
   fastify.put('/', { preHandler: roleMiddleware(['ADMIN']) }, async (request, reply) => {
     const schema = z.object({
-      businessName: z.string().optional(),
-      cuit: z.string().optional(),
-      ivaCondition: z.string().optional(),
-      address: z.string().optional(),
-      phone: z.string().optional(),
-      email: z.string().optional(),
-      logoPath: z.string().optional(),
-      arcaSalePoint: z.number().optional(),
-      arcaCert: z.string().optional(),
-      arcaKey: z.string().optional(),
-      arcaProduction: z.boolean().optional(),
+      businessName: z.string().nullish(),
+      cuit: z.string().nullish(),
+      ivaCondition: z.string().nullish(),
+      address: z.string().nullish(),
+      phone: z.string().nullish(),
+      email: z.string().nullish(),
+      logoPath: z.string().nullish(),
+      arcaSalePoint: z.number().nullish(),
+      arcaCert: z.string().nullish(),
+      arcaKey: z.string().nullish(),
+      arcaProduction: z.boolean().nullish(),
+      grossIncome: z.string().nullish(),
+      activityStartDate: z.string().nullish(),
     });
 
     const data = schema.parse(request.body);

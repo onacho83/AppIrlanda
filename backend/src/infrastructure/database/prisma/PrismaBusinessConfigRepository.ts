@@ -19,6 +19,8 @@ export class PrismaBusinessConfigRepository implements IBusinessConfigRepository
       record.arca_cert,
       record.arca_key,
       record.arca_production,
+      record.gross_income,
+      record.activity_start_date,
       record.updated_at
     );
   }
@@ -56,6 +58,8 @@ export class PrismaBusinessConfigRepository implements IBusinessConfigRepository
         ...(data.arcaCert !== undefined && { arca_cert: data.arcaCert }),
         ...(data.arcaKey !== undefined && { arca_key: data.arcaKey }),
         ...(data.arcaProduction !== undefined && { arca_production: data.arcaProduction }),
+        ...(data.grossIncome !== undefined && { gross_income: data.grossIncome }),
+        ...(data.activityStartDate !== undefined && { activity_start_date: data.activityStartDate }),
       }
     });
 

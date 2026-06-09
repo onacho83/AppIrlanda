@@ -42,6 +42,7 @@ export class GetOrderDetailUseCase {
       chargedToAccount: order.chargedToAccount,
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
+      invoiceId: order.invoiceId,
     };
   }
 }
