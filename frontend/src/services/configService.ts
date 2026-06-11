@@ -15,6 +15,7 @@ export interface BusinessConfig {
   arcaProduction: boolean;
   grossIncome: string | null;
   activityStartDate: string | null;
+  commercialLegend: string | null;
 }
 
 export const configService = {

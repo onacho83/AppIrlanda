@@ -21,6 +21,7 @@ export class PrismaBusinessConfigRepository implements IBusinessConfigRepository
       record.arca_production,
       record.gross_income,
       record.activity_start_date,
+      record.commercial_legend,
       record.updated_at
     );
   }
@@ -60,6 +61,7 @@ export class PrismaBusinessConfigRepository implements IBusinessConfigRepository
         ...(data.arcaProduction !== undefined && { arca_production: data.arcaProduction }),
         ...(data.grossIncome !== undefined && { gross_income: data.grossIncome }),
         ...(data.activityStartDate !== undefined && { activity_start_date: data.activityStartDate }),
+        ...(data.commercialLegend !== undefined && { commercial_legend: data.commercialLegend }),
       }
     });
 

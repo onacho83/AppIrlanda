@@ -14,6 +14,7 @@ export class BusinessConfig {
     public arcaProduction: boolean,
     public grossIncome: string | null,
     public activityStartDate: string | null,
+    public commercialLegend: string | null,
     public readonly updatedAt: Date
   ) {}
 }

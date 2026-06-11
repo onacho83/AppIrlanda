@@ -318,6 +318,7 @@ model BusinessConfig {
   arca_production     Boolean  @default(false)
   gross_income        String?
   activity_start_date String?
+  commercial_legend   String?
   updated_at          DateTime @updatedAt
 
   @@map("business_config")

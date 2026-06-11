@@ -153,6 +153,19 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="settings-form__group">
+            <label className="settings-form__label">Leyenda Comercial (pie de factura)</label>
+            <input
+              type="text"
+              className="input__field"
+              name="commercialLegend"
+              value={config.commercialLegend || ''}
+              onChange={handleChange}
+              placeholder="Ej: Impresión offset - digital - tipográfica - www.imprentairlanda.com"
+            />
+            <span className="settings-form__help">Texto que aparecerá al pie de las facturas PDF generadas.</span>
+          </div>
+
           <h2 className="settings-section-title" style={{ marginTop: 'var(--spacing-4)' }}>Configuración Fiscal (AFIP)</h2>
           <div className="settings-form__row">
             <div className="settings-form__group">

@@ -30,6 +30,7 @@ export async function businessConfigRoutes(fastify: FastifyInstance) {
       arcaProduction: z.boolean().nullish(),
       grossIncome: z.string().nullish(),
       activityStartDate: z.string().nullish(),
+      commercialLegend: z.string().nullish(),
     });
 
     const data = schema.parse(request.body);
