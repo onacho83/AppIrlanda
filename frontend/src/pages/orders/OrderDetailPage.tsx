@@ -11,8 +11,8 @@ import { invoiceService } from '../../services/invoiceService';
 import { DownloadInvoicePdfButton } from '../invoices/DownloadInvoicePdfButton';
 import { GenerateInvoiceModal } from '../invoices/GenerateInvoiceModal';
 import type { Invoice } from '../../types';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { configService } from '../../services/configService';
+import { generateOrderPdf } from './orderPdfGenerator';
 import './OrderDetailPage.css';
 
 export const OrderDetailPage: React.FC = () => {
@@ -65,24 +65,11 @@ export const OrderDetailPage: React.FC = () => {
   };
 
   const handlePrintPdf = async () => {
-    if (!printRef.current || !order) return;
+    if (!order) return;
     try {
       setIsPrinting(true);
-      const canvas = await html2canvas(printRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a5'
-      });
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Pedido_${order.orderNumber}.pdf`);
+      const config = await configService.getConfig();
+      await generateOrderPdf(order, order.client || null, config);
     } catch (err) {
       console.error('Error generando PDF del pedido', err);
     } finally {
@@ -319,38 +306,6 @@ export const OrderDetailPage: React.FC = () => {
         onSuccess={fetchOrder}
       />
 
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <div ref={printRef} className="print-ticket" style={{ width: '210mm', height: '148mm', background: 'white', color: 'black', padding: '10mm', boxSizing: 'border-box' }}>
-          <div className="print-main">
-            <h2>Imprenta Irlanda</h2>
-            <h3>Pedido #{order.orderNumber}</h3>
-            <p><strong>Fecha:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-            <p><strong>Cliente:</strong> {order.client?.name || 'Consumidor Final'}</p>
-            <br />
-            <p><strong>Producto:</strong> {order.product?.name}</p>
-            <p><strong>Detalle:</strong> {order.productDescription}</p>
-            <p><strong>Cantidad:</strong> {order.quantity}</p>
-            <br />
-            <p><strong>Total:</strong> ${Number(order.total).toLocaleString()}</p>
-            <p><strong>Abonado:</strong> ${Number(order.paidAmount).toLocaleString()}</p>
-            <p><strong>Saldo Pendiente:</strong> ${(Number(order.total) - Number(order.paidAmount)).toLocaleString()}</p>
-          </div>
-          <div className="print-stub">
-            <div>
-              <h3>Comprobante Cliente</h3>
-              <p><strong>Pedido:</strong> #{order.orderNumber}</p>
-              <p><strong>Fecha:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-              <br />
-              <p><strong>Producto:</strong> {order.productDescription}</p>
-              <p><strong>Total:</strong> ${Number(order.total).toLocaleString()}</p>
-              <p><strong>Saldo:</strong> ${(Number(order.total) - Number(order.paidAmount)).toLocaleString()}</p>
-            </div>
-            <div style={{ textAlign: 'center', fontSize: '0.8rem', marginTop: '20px' }}>
-              Presente este talón para retirar su trabajo.
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
