@@ -25,15 +25,15 @@ const SOFTER: [number, number, number] = [235, 237, 242]; // Fondos sutiles
 const WHITE: [number, number, number] = [255, 255, 255];
 
 // ── Tipografía ──
-const FS_MICRO = 4.5;
-const FS_TINY  = 5;
-const FS_XS    = 5.5;
-const FS_SM    = 6.5;
-const FS_BASE  = 7;
-const FS_MD    = 8;
-const FS_LG    = 10;
-const FS_XL    = 13;
-const FS_LETTER = 18;
+const FS_MICRO = 5;
+const FS_TINY  = 6;
+const FS_XS    = 6.5;
+const FS_SM    = 7.5;
+const FS_BASE  = 8;
+const FS_MD    = 9;
+const FS_LG    = 11;
+const FS_XL    = 14;
+const FS_LETTER = 19;
 
 // ══════════════════════════════════════════════════════════════════
 //  HELPERS
@@ -105,7 +105,7 @@ function drawBanner(d: jsPDF, y: number, label: string): number {
 
 function drawHeader(d: jsPDF, y: number, inv: Invoice, cfg: BusinessConfig | null | undefined, logo: string | null): number {
   const top = y;
-  const H = 44;
+  const H = 35;
   const bot = y + H;
 
   // ── Marco exterior ──
@@ -156,31 +156,29 @@ function drawHeader(d: jsPDF, y: number, inv: Invoice, cfg: BusinessConfig | nul
       const nameW = lMaxW - 14;
       const nameLines = d.splitTextToSize(cfg?.businessName || 'Empresa', nameW);
       d.text(nameLines, lPad + 13, ly + 4);
-      ly += Math.max(12, nameLines.length * 4 + 4);
     } catch {
       d.setFontSize(FS_LG);
       d.setFont('helvetica', 'bold');
       d.setTextColor(...DARK);
-      ly = drawWrapped(d, cfg?.businessName || 'Empresa', lPad, ly + 4, lMaxW);
-      ly += 3;
+      drawWrapped(d, cfg?.businessName || 'Empresa', lPad, ly + 4, lMaxW);
     }
   } else {
     d.setFontSize(FS_LG);
     d.setFont('helvetica', 'bold');
     d.setTextColor(...DARK);
-    ly = drawWrapped(d, cfg?.businessName || 'Empresa', lPad, ly + 4, lMaxW);
-    ly += 3;
+    drawWrapped(d, cfg?.businessName || 'Empresa', lPad, ly + 4, lMaxW);
   }
 
   // Datos fiscales del emisor
   d.setFontSize(FS_XS);
-  const lVx = lPad + 18;
-  const lFw = lMaxW - 18;
-  ly = labelValue(d, 'Razón Social:', cfg?.businessName || '-', lPad, ly, lVx, lFw);
-  ly += 0.5;
-  ly = labelValue(d, 'Domicilio:', cfg?.address || '-', lPad, ly, lVx, lFw);
-  ly += 0.5;
-  ly = labelValue(d, 'Cond. IVA:', ivaText(cfg?.ivaCondition), lPad, ly, lVx, lFw);
+  const lVx = lPad + 22;
+  const lFw = lMaxW - 22;
+  let bottomLy = bot - 11;
+  bottomLy = labelValue(d, 'Razón Social:', cfg?.businessName || '-', lPad, bottomLy, lVx, lFw);
+  bottomLy += 0.5;
+  bottomLy = labelValue(d, 'Domicilio:', cfg?.address || '-', lPad, bottomLy, lVx, lFw);
+  bottomLy += 0.5;
+  labelValue(d, 'Cond. IVA:', ivaText(cfg?.ivaCondition), lPad, bottomLy, lVx, lFw);
 
   // ══ COLUMNA DERECHA: COMPROBANTE ══
   const rPad = CX + boxW / 2 + 3;
@@ -204,15 +202,16 @@ function drawHeader(d: jsPDF, y: number, inv: Invoice, cfg: BusinessConfig | nul
 
   // Datos fiscales
   d.setFontSize(FS_XS);
-  const rVx = rPad + 24;
-  const rFw = rMaxW - 24;
-  ry = labelValue(d, 'Fecha de Emisión:', date(inv.createdAt), rPad, ry, rVx, rFw);
-  ry += 0.5;
-  ry = labelValue(d, 'C.U.I.T.:', cfg?.cuit || '-', rPad, ry, rVx, rFw);
-  ry += 0.5;
-  ry = labelValue(d, 'Ingresos Brutos:', cfg?.grossIncome || '-', rPad, ry, rVx, rFw);
-  ry += 0.5;
-  labelValue(d, 'Inicio Actividad:', cfg?.activityStartDate || '-', rPad, ry, rVx, rFw);
+  const rVx = rPad + 26;
+  const rFw = rMaxW - 26;
+  labelValue(d, 'Fecha de Emisión:', date(inv.createdAt), rPad, ry, rVx, rFw);
+  
+  let bottomRy = bot - 11;
+  bottomRy = labelValue(d, 'C.U.I.T.:', cfg?.cuit || '-', rPad, bottomRy, rVx, rFw);
+  bottomRy += 0.5;
+  bottomRy = labelValue(d, 'Ingresos Brutos:', cfg?.grossIncome || '-', rPad, bottomRy, rVx, rFw);
+  bottomRy += 0.5;
+  labelValue(d, 'Inicio Actividad:', cfg?.activityStartDate || '-', rPad, bottomRy, rVx, rFw);
 
   return bot + 1;
 }
@@ -224,18 +223,18 @@ function drawHeader(d: jsPDF, y: number, inv: Invoice, cfg: BusinessConfig | nul
 function drawClient(d: jsPDF, y: number, client: Client): number {
   // Título de sección
   d.setFillColor(...SOFTER);
-  d.roundedRect(ML, y, CW, 4, 0.8, 0.8, 'F');
+  d.roundedRect(ML, y, CW, 5, 0.8, 0.8, 'F');
   d.setFontSize(FS_TINY);
   d.setFont('helvetica', 'bold');
   d.setTextColor(...ACCENT);
-  d.text('DATOS DEL RECEPTOR', ML + 3, y + 2.8);
-  y += 6;
+  d.text('DATOS DEL RECEPTOR', ML + 3, y + 3.5);
+  y += 7;
 
   const lPad = ML + 3;
   const col2 = CX + 2;
-  const lVx = lPad + 18;
-  const rVx = col2 + 16;
-  const w1 = CX - lPad - 18 - 2;
+  const lVx = lPad + 20;
+  const rVx = col2 + 18;
+  const w1 = CX - lPad - 20 - 2;
   const w2 = RX - rVx - 2;
 
   d.setFontSize(FS_XS);
@@ -266,24 +265,20 @@ function drawClient(d: jsPDF, y: number, client: Client): number {
 // ══════════════════════════════════════════════════════════════════
 
 function drawTable(d: jsPDF, y: number, orders: Order[], isFactA: boolean, tableBot: number): number {
-  // Columnas: Factura A agrega "% IVA" e "IVA"
-  // [Cant, Descripción, P.Unit, %IVA, IVA, Subtotal]  ← Factura A
-  // [Cant, Descripción, P.Unit, Subtotal]               ← Factura B/C
-
-  const headerH = 5.5;
-  const rowH = 5;
+  const headerH = 6;
+  const rowH = 5.5;
 
   let colW: number[];
   let headers: string[];
 
   if (isFactA) {
-    colW = [11, 0, 20, 10, 16, 20]; // 6 columnas
-    colW[1] = CW - colW[0] - colW[2] - colW[3] - colW[4] - colW[5];
-    headers = ['Cant.', 'Descripción', 'P. Unitario', '% IVA', 'IVA', 'Subtotal'];
+    colW = [16, 12, 0, 22, 12, 18, 22]; // 7 columnas
+    colW[2] = CW - colW[0] - colW[1] - colW[3] - colW[4] - colW[5] - colW[6];
+    headers = ['Código', 'Cant.', 'Descripción', 'P. Unitario', '% IVA', 'IVA', 'Subtotal'];
   } else {
-    colW = [14, 0, 22, 22]; // 4 columnas
-    colW[1] = CW - colW[0] - colW[2] - colW[3];
-    headers = ['Cant.', 'Descripción', 'P. Unitario', 'Subtotal'];
+    colW = [18, 12, 0, 26, 26]; // 5 columnas
+    colW[2] = CW - colW[0] - colW[1] - colW[3] - colW[4];
+    headers = ['Código', 'Cant.', 'Descripción', 'P. Unitario', 'Subtotal'];
   }
 
   // ── Header de tabla con fondo accent ──
@@ -296,14 +291,14 @@ function drawTable(d: jsPDF, y: number, orders: Order[], isFactA: boolean, table
 
   let cx = ML;
   for (let i = 0; i < headers.length; i++) {
-    const tx = i <= 1 ? cx + 3 : cx + colW[i] - 3;
-    const al: 'left' | 'right' = i <= 1 ? 'left' : 'right';
-    d.text(headers[i], tx, y + 3.6, { align: al });
+    const tx = i <= 2 ? cx + 3 : cx + colW[i] - 3;
+    const al: 'left' | 'right' = i <= 2 ? 'left' : 'right';
+    d.text(headers[i], tx, y + 4, { align: al });
     cx += colW[i];
   }
 
   const dataTop = y + headerH;
-  let ry = dataTop + 3;
+  let ry = dataTop + 3.5;
 
   // ── Filas de datos ──
   d.setTextColor(...DARK);
@@ -312,62 +307,69 @@ function drawTable(d: jsPDF, y: number, orders: Order[], isFactA: boolean, table
     const order = orders[idx];
     if (ry + rowH > tableBot - 2) break;
 
-    const price = Number(order.unitPrice);
+    const basePrice = Number(order.unitPrice); // Base price without IVA
     const qty = Number(order.quantity);
-    const lineNet = price * qty;
-    const lineIva = lineNet * 0.21; // IVA se AGREGA al importe
-    const lineSub = isFactA ? lineNet : lineNet; // En B/C el precio ya incluye IVA
+    
+    const lineNet = basePrice * qty;
+    const lineIva = lineNet * 0.21;
+    const lineSubA = lineNet;
+    
+    const priceWithIva = basePrice * 1.21;
+    const lineSubB = lineNet * 1.21;
 
     d.setFontSize(FS_XS);
 
-    // Fondo alternado sutil
     if (idx % 2 === 1) {
       d.setFillColor(...SOFTER);
-      d.rect(ML, ry - 2.5, CW, rowH, 'F');
+      d.rect(ML, ry - 3, CW, rowH, 'F');
     }
 
     cx = ML;
 
-    // Cantidad
+    // Código
     d.setFont('helvetica', 'normal');
-    d.setTextColor(...DARK);
-    d.text(qty.toString(), cx + colW[0] / 2, ry, { align: 'center' });
+    d.setTextColor(...MID);
+    const code = order.id ? order.id.substring(0, 6).toUpperCase() : '-';
+    d.text(code, cx + 2, ry);
     cx += colW[0];
 
-    // Descripción (text-wrap)
-    d.setFont('helvetica', 'bold');
-    const descLines = d.splitTextToSize(order.productDescription, colW[1] - 6);
-    d.text(descLines, cx + 3, ry);
-    d.setFont('helvetica', 'normal');
-    const extraH = descLines.length > 1 ? (descLines.length - 1) * 2.5 : 0;
+    // Cantidad
+    d.setTextColor(...DARK);
+    d.text(qty.toString(), cx + colW[1] / 2, ry, { align: 'center' });
     cx += colW[1];
 
-    // P. Unitario
-    d.text(money(price), cx + colW[2] - 3, ry, { align: 'right' });
+    // Descripción
+    d.setFont('helvetica', 'bold');
+    const descLines = d.splitTextToSize(order.productDescription, colW[2] - 6);
+    d.text(descLines, cx + 3, ry);
+    d.setFont('helvetica', 'normal');
+    const extraH = descLines.length > 1 ? (descLines.length - 1) * 3 : 0;
     cx += colW[2];
 
     if (isFactA) {
-      // % IVA
-      d.text('21,00', cx + colW[3] - 3, ry, { align: 'right' });
+      d.text(money(basePrice), cx + colW[3] - 3, ry, { align: 'right' });
       cx += colW[3];
-
-      // IVA $
-      d.text(money(lineIva), cx + colW[4] - 3, ry, { align: 'right' });
+      d.text('21,00', cx + colW[4] - 3, ry, { align: 'right' });
       cx += colW[4];
+      d.text(money(lineIva), cx + colW[5] - 3, ry, { align: 'right' });
+      cx += colW[5];
+      d.setFont('helvetica', 'bold');
+      d.text(money(lineSubA), cx + colW[6] - 3, ry, { align: 'right' });
+    } else {
+      d.text(money(priceWithIva), cx + colW[3] - 3, ry, { align: 'right' });
+      cx += colW[3];
+      d.setFont('helvetica', 'bold');
+      d.text(money(lineSubB), cx + colW[4] - 3, ry, { align: 'right' });
     }
-
-    // Subtotal
-    d.setFont('helvetica', 'bold');
-    d.text(money(lineSub), cx + colW[colW.length - 1] - 3, ry, { align: 'right' });
 
     ry += rowH + extraH;
   }
 
-  // ── Borde inferior de la tabla (llena hasta tableBot) ──
+  // ── Borde inferior de la tabla ──
   d.setDrawColor(...LIGHT);
   hRule(d, tableBot, ML, RX, 0.3);
 
-  // Bordes verticales laterales de la tabla
+  // Bordes verticales laterales
   d.setDrawColor(...DARK);
   vRule(d, ML, y, tableBot, 0.3);
   vRule(d, RX, y, tableBot, 0.3);
@@ -382,27 +384,22 @@ function drawTable(d: jsPDF, y: number, orders: Order[], isFactA: boolean, table
 function drawTotals(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA: boolean): number {
   const top = y;
 
-  // Calcular montos reales desde los ítems
   let netoGravado = 0;
   for (const o of orders) {
     netoGravado += Number(o.unitPrice) * Number(o.quantity);
   }
   const ivaTotal = netoGravado * 0.21;
   const totalConIva = netoGravado + ivaTotal;
-
-  // Si tenemos datos de la factura, usamos esos; si no, calculamos
-  const invoiceTotal = Number(inv.total);
-  const displayTotal = invoiceTotal > 0 ? invoiceTotal : totalConIva;
+  const displayTotal = totalConIva;
 
   const lblCol = ML + CW * 0.58;
   const valCol = RX - 3;
   const gap = 5;
-  let ty = top + 5;
+  let ty = top + 6;
 
   d.setFontSize(FS_SM);
 
   if (isFactA) {
-    // Neto Gravado
     d.setFont('helvetica', 'normal');
     d.setTextColor(...MID);
     d.text('Importe Neto Gravado', lblCol, ty, { align: 'right' });
@@ -410,26 +407,22 @@ function drawTotals(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA:
     d.text(`$ ${money(netoGravado)}`, valCol, ty, { align: 'right' });
     ty += gap;
 
-    // IVA 21%
     d.setTextColor(...MID);
     d.text('IVA 21,00%', lblCol, ty, { align: 'right' });
     d.setTextColor(...DARK);
     d.text(`$ ${money(ivaTotal)}`, valCol, ty, { align: 'right' });
     ty += gap;
 
-    // Otros tributos
     d.setTextColor(...MID);
     d.text('Otros Tributos', lblCol, ty, { align: 'right' });
     d.setTextColor(...DARK);
     d.text('$ 0,00', valCol, ty, { align: 'right' });
     ty += 3;
 
-    // Separador
     d.setDrawColor(...ACCENT);
     hRule(d, ty, lblCol - 20, RX, 0.4);
-    ty += 5;
+    ty += 6;
   } else {
-    // Factura B/C
     d.setFont('helvetica', 'normal');
     d.setTextColor(...MID);
     d.text('Subtotal', lblCol, ty, { align: 'right' });
@@ -439,23 +432,24 @@ function drawTotals(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA:
 
     d.setDrawColor(...ACCENT);
     hRule(d, ty, lblCol - 20, RX, 0.4);
-    ty += 5;
+    ty += 6;
   }
 
   // ── TOTAL PROMINENTE ──
   d.setFillColor(...ACCENT);
-  d.roundedRect(lblCol - 22, ty - 3.5, RX - lblCol + 25, 8, 1, 1, 'F');
+  const boxX = lblCol - 22;
+  const boxW = RX - boxX;
+  d.roundedRect(boxX, ty - 4.5, boxW, 9, 1, 1, 'F');
 
   d.setTextColor(...WHITE);
   d.setFontSize(FS_MD);
   d.setFont('helvetica', 'bold');
-  d.text('TOTAL', lblCol - 2, ty + 1, { align: 'right' });
+  d.text('TOTAL', lblCol - 2, ty + 1.5, { align: 'right' });
   d.setFontSize(FS_LG);
   d.text(`$ ${money(displayTotal)}`, valCol, ty + 1.5, { align: 'right' });
 
-  const sectionBot = ty + 7;
+  const sectionBot = ty + 8;
 
-  // Bordes laterales
   d.setDrawColor(...DARK);
   vRule(d, ML, top, sectionBot, 0.3);
   vRule(d, RX, top, sectionBot, 0.3);
@@ -468,23 +462,26 @@ function drawTotals(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA:
 //  ⑥ TRANSPARENCIA FISCAL (Ley 27.743 — Solo Facturas B/C)
 // ══════════════════════════════════════════════════════════════════
 
-function drawTransparencia(d: jsPDF, y: number, inv: Invoice, isFactA: boolean): number {
+function drawTransparencia(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA: boolean): number {
   if (isFactA) return y;
 
-  const total = Number(inv.total);
-  const ivaContenido = total - total / 1.21;
+  let netoGravado = 0;
+  for (const o of orders) {
+    netoGravado += Number(o.unitPrice) * Number(o.quantity);
+  }
+  const ivaContenido = netoGravado * 0.21;
 
-  const h = 5.5;
+  const h = 6;
   d.setFillColor(...SOFTER);
   d.rect(ML, y, CW, h, 'F');
 
   d.setFontSize(FS_MICRO);
   d.setTextColor(...ACCENT);
   d.setFont('helvetica', 'bold');
-  d.text('Régimen de Transparencia Fiscal al Consumidor (Ley 27.743)', ML + 3, y + 3.5);
+  d.text('Régimen de Transparencia Fiscal al Consumidor (Ley 27.743)', ML + 3, y + 4);
 
   d.setTextColor(...DARK);
-  d.text(`IVA Contenido: $ ${money(ivaContenido)}`, RX - 3, y + 3.5, { align: 'right' });
+  d.text(`IVA Contenido: $ ${money(ivaContenido)}`, RX - 3, y + 4, { align: 'right' });
 
   // Bordes
   d.setDrawColor(...DARK);
@@ -500,10 +497,10 @@ function drawTransparencia(d: jsPDF, y: number, inv: Invoice, isFactA: boolean):
 // ══════════════════════════════════════════════════════════════════
 
 function drawFooter(d: jsPDF, y: number, inv: Invoice, legend?: string | null): void {
-  const footH = 24;
+  const footH = 25;
   const top = y;
   const bot = top + footH;
-  const qrS = 20;
+  const qrS = 21;
 
   // ── Bordes ──
   d.setDrawColor(...DARK);
@@ -591,9 +588,9 @@ function drawPage(
   y = drawClient(d, y, client);
 
   // Calcular espacio reservado para secciones inferiores
-  const totalsH = isFactA ? 28 : 18;
-  const transpH = isFactA ? 0 : 5.5;
-  const footerH = 24;
+  const totalsH = isFactA ? 30 : 20;
+  const transpH = isFactA ? 0 : 6;
+  const footerH = 25;
   const reserved = totalsH + transpH + footerH + 3;
   const tableMaxBot = PH - MT - reserved;
 
@@ -604,7 +601,7 @@ function drawPage(
   y = drawTotals(d, y, inv, orders, isFactA);
 
   // ⑥ Transparencia Fiscal
-  y = drawTransparencia(d, y, inv, isFactA);
+  y = drawTransparencia(d, y, inv, orders, isFactA);
 
   // ⑦ Footer
   drawFooter(d, y, inv, cfg?.commercialLegend);

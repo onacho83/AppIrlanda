@@ -7,7 +7,7 @@
     "dev": "nodemon --watch \"src/**/*.ts\" --exec ts-node src/infrastructure/http/server.ts",
     "build": "tsc",
     "start": "node dist/infrastructure/http/server.js",
-    "test": "vitest run",
+    "test": "vitest run src",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed"
