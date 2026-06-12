@@ -23,6 +23,17 @@ export async function invoiceRoutes(fastify: FastifyInstance) {
     return reply.status(201).send({ data: result });
   });
 
+  // Generar nota de crédito
+  fastify.post('/:id/credit-note', async (request, reply) => {
+    const { id } = z.object({ id: z.string().uuid() }).parse(request.params);
+    const userId = (request as any).user.id;
+
+    const useCase = container.resolve('generateCreditNoteUseCase');
+    const result = await useCase.execute(id, userId);
+    
+    return reply.status(201).send({ data: result });
+  });
+
   // Obtener listado de facturas
   fastify.get('/', async (request, reply) => {
     const querySchema = z.object({

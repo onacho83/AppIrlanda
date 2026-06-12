@@ -38,6 +38,37 @@ export class PrismaAccountMovementRepository implements IAccountMovementReposito
     return this.toDomain(movement);
   }
 
+  async update(id: string, data: { amount?: number; description?: string }): Promise<AccountMovement> {
+    const movement = await this.prisma.accountMovement.update({
+      where: { id },
+      data,
+    });
+    return this.toDomain(movement);
+  }
+
+  async recalculateBalances(clientId: string): Promise<void> {
+    const movements = await this.prisma.accountMovement.findMany({
+      where: { client_id: clientId },
+      orderBy: { created_at: 'asc' }, // Orden cronológico
+    });
+
+    let currentBalance = 0;
+    for (const mov of movements) {
+      if (mov.type === 'CARGO') {
+        currentBalance += Number(mov.amount);
+      } else if (mov.type === 'PAGO') {
+        currentBalance -= Number(mov.amount);
+      }
+      
+      if (Number(mov.balance_after) !== currentBalance) {
+        await this.prisma.accountMovement.update({
+          where: { id: mov.id },
+          data: { balance_after: currentBalance },
+        });
+      }
+    }
+  }
+
   private toDomain(data: any): AccountMovement {
     return new AccountMovement(
       data.id,

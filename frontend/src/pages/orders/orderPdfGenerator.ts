@@ -11,7 +11,7 @@ const PW = 210;
 const PH = 148;
 const ML = 10;           // Margen izquierdo general
 const MT = 10;           // Margen superior general
-const STUB_WIDTH = 65;   // Ancho del talón (lado derecho)
+const STUB_WIDTH = 58;   // Ancho del talón (lado derecho - reducido 10%)
 const MAIN_WIDTH = PW - ML * 2 - STUB_WIDTH - 5; // Ancho zona principal
 const DIVIDER_X = ML + MAIN_WIDTH + 2.5; // Coordenada X de la línea de corte
 
@@ -25,7 +25,6 @@ const WHITE: [number, number, number] = [255, 255, 255];
 
 // ── Tipografía ──
 const FS_MICRO = 6;
-const FS_TINY  = 7;
 const FS_XS    = 8;
 const FS_SM    = 9;
 const FS_BASE  = 10;
@@ -117,7 +116,7 @@ function drawMainSection(d: jsPDF, order: Order, client: Client | null, cfg: Bus
   // -- PEDIDO INFO (Derecha del cuadro) --
   const rPad = boxX + boxW + 5;
   let ry = y + 8;
-  d.setFontSize(FS_XL);
+  d.setFontSize(FS_LG); // Reducido para evitar cruzar la línea punteada
   d.setFont('helvetica', 'bold');
   d.setTextColor(...ACCENT);
   d.text(`N° ${order.orderNumber}`, rPad, ry);
@@ -196,13 +195,12 @@ function drawMainSection(d: jsPDF, order: Order, client: Client | null, cfg: Bus
   
   d.setFontSize(FS_BASE);
   labelValue(d, 'Subtotal:', `$ ${money(Number(order.subtotal))}`, ML + MAIN_WIDTH - 60, tY, ML + MAIN_WIDTH - 30, 30);
-  labelValue(d, 'Impuestos:', `$ ${money(Number(order.taxAmount))}`, ML + MAIN_WIDTH - 60, tY + 6, ML + MAIN_WIDTH - 30, 30);
   
   d.setFontSize(FS_LG);
   d.setTextColor(...ACCENT);
-  d.text('TOTAL:', ML + MAIN_WIDTH - 60, tY + 14);
+  d.text('TOTAL:', ML + MAIN_WIDTH - 60, tY + 10);
   d.setTextColor(...DARK);
-  d.text(`$ ${money(Number(order.total))}`, ML + MAIN_WIDTH - 30, tY + 14);
+  d.text(`$ ${money(Number(order.total))}`, ML + MAIN_WIDTH - 30, tY + 10);
   
   // Pagos a la izquierda
   d.setFontSize(FS_SM);
@@ -210,6 +208,12 @@ function drawMainSection(d: jsPDF, order: Order, client: Client | null, cfg: Bus
   const saldo = Number(order.total) - Number(order.paidAmount);
   d.setTextColor(saldo > 0 ? 200 : 50, saldo > 0 ? 0 : 150, 50); // Rojo si debe, verde si no
   labelValue(d, 'Saldo Pdt:', `$ ${money(saldo)}`, ML, tY + 14, ML + 22, 40);
+  
+  // -- LEYENDAS LEGALES --
+  d.setFontSize(FS_MICRO);
+  d.setTextColor(...MID);
+  d.setFont('helvetica', 'italic');
+  d.text('Documento no válido como factura. Los precios no incluyen IVA.', ML, PH - MT - 2);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -246,7 +250,7 @@ function drawStubSection(d: jsPDF, order: Order, client: Client | null, cfg: Bus
   d.setFillColor(...SOFTER);
   d.roundedRect(sX, y, STUB_WIDTH, 18, 1, 1, 'F');
   
-  d.setFontSize(FS_LG);
+  d.setFontSize(FS_MD); // Reducido acorde al resto
   d.setFont('helvetica', 'bold');
   d.setTextColor(...ACCENT);
   d.text(`Pedido N° ${order.orderNumber}`, sX + STUB_WIDTH / 2, y + 7, { align: 'center' });
@@ -284,7 +288,13 @@ function drawStubSection(d: jsPDF, order: Order, client: Client | null, cfg: Bus
   d.setFontSize(FS_MICRO);
   d.setTextColor(...MID);
   d.setFont('helvetica', 'normal');
-  d.text('Presente este talón para retirar su trabajo.', sX + STUB_WIDTH / 2, PH - MT - 2, { align: 'center' });
+  d.text('Presente este talón para retirar su trabajo.', sX + STUB_WIDTH / 2, PH - MT - 8, { align: 'center' });
+  
+  d.setFontSize(FS_MICRO + 1);
+  d.setFont('helvetica', 'bold');
+  d.setTextColor(...DARK);
+  d.text('No válido como factura.', sX + STUB_WIDTH / 2, PH - MT - 4, { align: 'center' });
+  d.text('Los precios no incluyen IVA.', sX + STUB_WIDTH / 2, PH - MT, { align: 'center' });
 }
 
 // ══════════════════════════════════════════════════════════════════

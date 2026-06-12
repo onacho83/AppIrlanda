@@ -28,8 +28,72 @@
 }
 
 @media (max-width: 768px) {
+.orders-page {
+  padding: var(--spacing-6);
+  animation: fade-in var(--transition-normal);
+}
+
+.orders-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.orders-page__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.orders-page__filters {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  background-color: var(--color-surface);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  align-items: flex-end;
+}
+
+@media (max-width: 768px) {
   .orders-page__filters {
     flex-direction: column;
     align-items: stretch;
   }
 }
+
+/* Colores de Fila según Estado */
+
+/* Recibido (Blue) */
+.row-recibido td { background-color: rgba(59, 130, 246, 0.05) !important; }
+.row-recibido:hover td { background-color: rgba(59, 130, 246, 0.1) !important; }
+
+/* Esperando Diseño (Violet) */
+.row-esperando-diseno td { background-color: rgba(139, 92, 246, 0.05) !important; }
+.row-esperando-diseno:hover td { background-color: rgba(139, 92, 246, 0.1) !important; }
+
+/* Esperando Confirmación (Amber) */
+.row-esperando-confirmacion td { background-color: rgba(245, 158, 11, 0.05) !important; }
+.row-esperando-confirmacion:hover td { background-color: rgba(245, 158, 11, 0.1) !important; }
+
+/* En Producción (Cyan) */
+.row-en-produccion td { background-color: rgba(6, 182, 212, 0.05) !important; }
+.row-en-produccion:hover td { background-color: rgba(6, 182, 212, 0.1) !important; }
+
+/* Terminado (Green) */
+.row-terminado td { background-color: rgba(34, 197, 94, 0.05) !important; }
+.row-terminado:hover td { background-color: rgba(34, 197, 94, 0.1) !important; }
+
+/* Entregado (Slate) */
+.row-entregado td { background-color: rgba(100, 116, 139, 0.05) !important; }
+.row-entregado:hover td { background-color: rgba(100, 116, 139, 0.1) !important; }
+
+/* Cancelado (Red) */
+.row-cancelado td { background-color: rgba(239, 68, 68, 0.05) !important; }
+.row-cancelado:hover td { background-color: rgba(239, 68, 68, 0.1) !important; }
+
+/* Nota de Crédito (Warning) */
+.row-nc td { background-color: var(--color-warning-light) !important; }
+.row-nc:hover td { background-color: rgba(245, 158, 11, 0.2) !important; }

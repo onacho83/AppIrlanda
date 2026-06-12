@@ -10,6 +10,13 @@ export interface CreatePaymentInput {
   notes?: string;
 }
 
+export interface UpdatePaymentInput {
+  amount?: number;
+  method?: 'EFECTIVO' | 'TRANSFERENCIA';
+  reference?: string;
+  notes?: string;
+}
+
 export const paymentService = {
   createPayment: async (data: CreatePaymentInput): Promise<Payment> => {
     const response = await api.post('/payments', data);
@@ -23,6 +30,11 @@ export const paymentService = {
     orderId?: string;
   }): Promise<{ data: Payment[]; total: number }> => {
     const response = await api.get('/payments', { params });
+    return response.data;
+  },
+
+  updatePayment: async (id: string, data: UpdatePaymentInput): Promise<Payment> => {
+    const response = await api.put(`/payments/${id}`, data);
     return response.data;
   },
 };

@@ -12,6 +12,7 @@ export interface CreatePaymentDTO {
 
 export interface IPaymentRepository {
   create(payment: CreatePaymentDTO): Promise<Payment>;
+  update(id: string, data: Partial<CreatePaymentDTO>): Promise<Payment>;
   findById(id: string): Promise<Payment | null>;
   findByOrder(orderId: string): Promise<Payment[]>;
   findByClient(clientId: string): Promise<Payment[]>;

@@ -279,11 +279,14 @@ model Invoice {
   qr_data        String?     @db.Text
   arca_request   Json?
   arca_response  Json?
+  original_invoice_id String? @db.Uuid
   created_at     DateTime    @default(now())
 
   client         Client      @relation(fields: [client_id], references: [id])
   creator        User        @relation(fields: [created_by], references: [id])
   orders         Order[]
+  original_invoice Invoice?  @relation("CreditNoteRelation", fields: [original_invoice_id], references: [id])
+  credit_notes     Invoice[] @relation("CreditNoteRelation")
 
   @@map("invoices")
 }

@@ -156,6 +156,7 @@ export interface Invoice {
   taxAmount: number;
   total: number;
   qrData?: string;
+  originalInvoiceId?: string;
   createdAt: string;
   orders?: Order[];
 }

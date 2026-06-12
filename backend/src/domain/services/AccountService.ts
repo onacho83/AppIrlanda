@@ -71,4 +71,45 @@ export class AccountService {
 
     return payment;
   }
+
+  async updatePayment(id: string, data: {
+    amount?: number;
+    method?: PaymentMethod;
+    reference?: string | null;
+    notes?: string | null;
+  }) {
+    const payment = await this.paymentRepository.findById(id);
+    if (!payment) throw new NotFoundError('Pago no encontrado');
+
+    const amountDiff = data.amount !== undefined ? data.amount - payment.amount : 0;
+
+    const updatedPayment = await this.paymentRepository.update(id, data);
+
+    if (amountDiff !== 0) {
+      if (payment.orderId) {
+        const order = await this.orderRepository.findById(payment.orderId);
+        if (order) {
+          await this.orderRepository.update(order.id, {
+            paidAmount: order.paidAmount + amountDiff
+          });
+        }
+      }
+
+      const client = await this.clientRepository.findById(payment.clientId);
+      if (client?.hasCurrentAccount) {
+        const movements = await this.accountMovementRepository.findByClient(payment.clientId);
+        const movement = movements.find(m => m.paymentId === payment.id);
+        
+        if (movement) {
+          await this.accountMovementRepository.update(movement.id, {
+            amount: data.amount,
+            description: movement.description?.includes('(Editado)') ? movement.description : `${movement.description} (Editado)`
+          });
+          await this.accountMovementRepository.recalculateBalances(payment.clientId);
+        }
+      }
+    }
+
+    return updatedPayment;
+  }
 }

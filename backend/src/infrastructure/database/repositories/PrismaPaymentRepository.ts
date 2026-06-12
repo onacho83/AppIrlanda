@@ -20,6 +20,19 @@ export class PrismaPaymentRepository implements IPaymentRepository {
     return this.toDomain(payment);
   }
 
+  async update(id: string, data: Partial<CreatePaymentDTO>): Promise<Payment> {
+    const payment = await this.prisma.payment.update({
+      where: { id },
+      data: {
+        amount: data.amount,
+        method: data.method as any,
+        reference: data.reference,
+        notes: data.notes,
+      },
+    });
+    return this.toDomain(payment);
+  }
+
   async findById(id: string): Promise<Payment | null> {
     const payment = await this.prisma.payment.findUnique({ where: { id } });
     if (!payment) return null;

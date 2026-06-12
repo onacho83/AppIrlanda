@@ -15,4 +15,6 @@ export interface IAccountMovementRepository {
   create(movement: CreateAccountMovementDTO): Promise<AccountMovement>;
   findByClient(clientId: string): Promise<AccountMovement[]>;
   findLastByClient(clientId: string): Promise<AccountMovement | null>;
+  update(id: string, data: { amount?: number; description?: string }): Promise<AccountMovement>;
+  recalculateBalances(clientId: string): Promise<void>;
 }

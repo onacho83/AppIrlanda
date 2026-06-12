@@ -21,6 +21,7 @@ export class PrismaInvoiceRepository implements IInvoiceRepository {
       record.qr_data,
       record.arca_request,
       record.arca_response,
+      record.original_invoice_id,
       record.created_at
     );
   }
@@ -82,6 +83,7 @@ export class PrismaInvoiceRepository implements IInvoiceRepository {
         qr_data: invoice.qrData,
         arca_request: invoice.arcaRequest,
         arca_response: invoice.arcaResponse,
+        original_invoice_id: invoice.originalInvoiceId,
         // Asociar las rdenes a esta factura
         orders: {
           connect: orderIds.map(id => ({ id }))

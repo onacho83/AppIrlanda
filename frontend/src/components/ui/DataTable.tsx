@@ -29,6 +29,8 @@ export interface DataTableProps<T> {
   onRowClick?: (row: T) => void;
   /** Función para obtener la key única de cada fila */
   rowKey?: (row: T) => string;
+  /** Función para asignar clases CSS personalizadas a cada fila */
+  rowClassName?: (row: T) => string;
 }
 
 /** Tabla de datos genérica con ordenamiento, skeleton loader y estado vacío */
@@ -40,6 +42,7 @@ export function DataTable<T>({
   emptyIcon = '📋',
   onRowClick,
   rowKey,
+  rowClassName,
 }: DataTableProps<T>) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -165,6 +168,7 @@ export function DataTable<T>({
               className={[
                 'data-table__row',
                 onRowClick && 'data-table__row--clickable',
+                rowClassName && rowClassName(row),
               ]
                 .filter(Boolean)
                 .join(' ')}

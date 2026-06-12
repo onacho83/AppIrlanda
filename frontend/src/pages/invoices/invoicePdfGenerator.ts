@@ -56,12 +56,7 @@ function ivaText(c: string | null | undefined): string {
 function hRule(d: jsPDF, y: number, x1 = ML, x2 = RX, w = 0.25) { d.setLineWidth(w); d.line(x1, y, x2, y); }
 function vRule(d: jsPDF, x: number, y1: number, y2: number, w = 0.25) { d.setLineWidth(w); d.line(x, y1, x, y2); }
 
-/** Devuelve la altura en mm de un bloque de texto con el fontSize actual */
-function textHeight(d: jsPDF, text: string, maxW: number): number {
-  const lines = d.splitTextToSize(text || '-', maxW);
-  const lh = (d.getFontSize() * d.getLineHeightFactor()) / d.internal.scaleFactor;
-  return lines.length * lh;
-}
+
 
 /** Dibuja texto multilínea y devuelve la Y inferior del bloque */
 function drawWrapped(d: jsPDF, text: string, x: number, y: number, maxW: number, align: 'left'|'right'|'center' = 'left'): number {
@@ -381,7 +376,7 @@ function drawTable(d: jsPDF, y: number, orders: Order[], isFactA: boolean, table
 //  ⑤ TOTALES (IVA se SUMA al importe neto)
 // ══════════════════════════════════════════════════════════════════
 
-function drawTotals(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA: boolean): number {
+function drawTotals(d: jsPDF, y: number, orders: Order[], isFactA: boolean): number {
   const top = y;
 
   let netoGravado = 0;
@@ -462,7 +457,7 @@ function drawTotals(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA:
 //  ⑥ TRANSPARENCIA FISCAL (Ley 27.743 — Solo Facturas B/C)
 // ══════════════════════════════════════════════════════════════════
 
-function drawTransparencia(d: jsPDF, y: number, inv: Invoice, orders: Order[], isFactA: boolean): number {
+function drawTransparencia(d: jsPDF, y: number, orders: Order[], isFactA: boolean): number {
   if (isFactA) return y;
 
   let netoGravado = 0;
@@ -598,10 +593,10 @@ function drawPage(
   y = drawTable(d, y, orders, isFactA, tableMaxBot);
 
   // ⑤ Totales
-  y = drawTotals(d, y, inv, orders, isFactA);
+  y = drawTotals(d, y, orders, isFactA);
 
   // ⑥ Transparencia Fiscal
-  y = drawTransparencia(d, y, inv, orders, isFactA);
+  y = drawTransparencia(d, y, orders, isFactA);
 
   // ⑦ Footer
   drawFooter(d, y, inv, cfg?.commercialLegend);
@@ -644,5 +639,6 @@ export async function generateInvoicePdf(
   doc.addPage([PW, PH]);
   drawPage(doc, invoice, client, orders, config, 'DUPLICADO', logo);
 
-  doc.save(`Factura_${invoice.invoiceNumber}.pdf`);
+  const typeName = invoice.invoiceType.includes('NOTA_CREDITO') ? 'Nota_de_Credito' : 'Factura';
+  doc.save(`${typeName}_${invoice.invoiceNumber}.pdf`);
 }

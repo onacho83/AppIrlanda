@@ -16,6 +16,7 @@ export class Invoice {
     public qrData: string | null,
     public arcaRequest: any | null,
     public arcaResponse: any | null,
+    public originalInvoiceId: string | null,
     public readonly createdAt: Date
   ) {}
 }

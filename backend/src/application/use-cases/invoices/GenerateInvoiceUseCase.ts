@@ -96,6 +96,7 @@ export class GenerateInvoiceUseCase {
       qrData: afipRes.qrData,
       arcaRequest: afipRes.arcaRequest,
       arcaResponse: afipRes.arcaResponse,
+      originalInvoiceId: null
     }, req.orderIds);
 
     // 6. Cambiar el estado de los pedidos a ENTREGADO si estaban en TERMINADO (opcional, dependera de la logica de negocio)

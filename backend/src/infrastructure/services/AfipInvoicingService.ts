@@ -37,10 +37,13 @@ export class AfipInvoicingService implements IInvoicingService {
     const afip = await this.getAfipInstance();
     const salePoint = config.arcaSalePoint!;
 
-    // Determinar tipo de comprobante AFIP (11 = Factura C, 1 = Factura A, 6 = Factura B)
+    // Determinar tipo de comprobante AFIP (11 = Factura C, 1 = Factura A, 6 = Factura B, 3 = NC A, 8 = NC B, 13 = NC C)
     let tipoCmp = 11; // Factura C por defecto
     if (data.invoiceType === 'FACTURA_A') tipoCmp = 1;
     else if (data.invoiceType === 'FACTURA_B') tipoCmp = 6;
+    else if (data.invoiceType === 'NOTA_CREDITO_A') tipoCmp = 3;
+    else if (data.invoiceType === 'NOTA_CREDITO_B') tipoCmp = 8;
+    else if (data.invoiceType === 'NOTA_CREDITO_C') tipoCmp = 13;
 
     let lastVoucher = 0;
     if (!config.arcaCert || !config.arcaKey) {
@@ -91,8 +94,18 @@ export class AfipInvoicingService implements IInvoicingService {
       'MonCotiz': 1
     };
 
-    // Si es A o B con IVA, enviamos la tabla de IVA (21% es Id=5)
-    if (data.invoiceType !== 'FACTURA_C' && data.taxAmount > 0) {
+    if (data.associatedInvoice) {
+      afipData.CbtesAsoc = [
+        {
+          Tipo: data.associatedInvoice.cbteTipo,
+          PtoVta: data.associatedInvoice.ptoVta,
+          Nro: data.associatedInvoice.nro
+        }
+      ];
+    }
+
+    // Si es A o B con IVA (Factura o Nota de Crédito), enviamos la tabla de IVA (21% es Id=5)
+    if (!data.invoiceType.includes('C') && data.taxAmount > 0) {
       afipData.Iva = [
         {
           'Id': 5, // 21%

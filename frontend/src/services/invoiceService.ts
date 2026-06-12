@@ -15,5 +15,10 @@ export const invoiceService = {
   getInvoiceById: async (id: string): Promise<Invoice> => {
     const response = await api.get(`/invoices/${id}`);
     return response.data.data;
+  },
+
+  generateCreditNote: async (originalInvoiceId: string): Promise<Invoice> => {
+    const response = await api.post(`/invoices/${originalInvoiceId}/credit-note`);
+    return response.data.data;
   }
 };

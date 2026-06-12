@@ -57,7 +57,25 @@ export const OrdersListPage: React.FC = () => {
     { 
       header: 'Estado', 
       accessor: 'status' as keyof Order,
-      render: (val: any) => <StatusBadge status={val} />
+      render: (val: any, row: Order) => (
+        <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
+          <StatusBadge status={val} />
+          {row.invoiceId && (
+            <span style={{ 
+              fontSize: '0.65rem', 
+              padding: '2px 6px', 
+              borderRadius: '4px', 
+              background: val === 'CANCELADO' ? 'var(--color-warning-light)' : 'var(--color-success-light)', 
+              color: val === 'CANCELADO' ? 'var(--color-warning-dark)' : 'var(--color-success-dark)', 
+              fontWeight: 'bold', 
+              alignSelf: 'flex-start',
+              border: `1px solid ${val === 'CANCELADO' ? 'var(--color-warning)' : 'var(--color-success)'}`
+            }}>
+              {val === 'CANCELADO' ? 'ANULADO (NC)' : 'FACTURADO'}
+            </span>
+          )}
+        </div>
+      )
     },
     { 
       header: 'Fecha Ingreso', 
@@ -65,6 +83,21 @@ export const OrdersListPage: React.FC = () => {
       render: (val: any) => new Date(val).toLocaleDateString()
     },
   ];
+
+  const getRowClassName = (row: Order) => {
+    if (row.invoiceId && row.status === 'CANCELADO') return 'row-nc';
+    
+    switch (row.status) {
+      case 'RECIBIDO': return 'row-recibido';
+      case 'ESPERANDO_DISENO': return 'row-esperando-diseno';
+      case 'ESPERANDO_CONFIRMACION': return 'row-esperando-confirmacion';
+      case 'EN_PRODUCCION': return 'row-en-produccion';
+      case 'TERMINADO': return 'row-terminado';
+      case 'ENTREGADO': return 'row-entregado';
+      case 'CANCELADO': return 'row-cancelado';
+      default: return '';
+    }
+  };
 
   return (
     <div className="orders-page">
@@ -111,6 +144,7 @@ export const OrdersListPage: React.FC = () => {
         loading={loading}
         emptyMessage="No se encontraron pedidos"
         onRowClick={(order) => navigate(`/pedidos/${order.id}`)}
+        rowClassName={getRowClassName}
       />
     </div>
   );

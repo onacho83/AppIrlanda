@@ -10,7 +10,8 @@ import { PaymentFormModal } from '../payments/PaymentFormModal';
 import { invoiceService } from '../../services/invoiceService';
 import { DownloadInvoicePdfButton } from '../invoices/DownloadInvoicePdfButton';
 import { GenerateInvoiceModal } from '../invoices/GenerateInvoiceModal';
-import type { Invoice } from '../../types';
+import type { Invoice, Payment } from '../../types';
+import { paymentService } from '../../services/paymentService';
 import { configService } from '../../services/configService';
 import { generateOrderPdf } from './orderPdfGenerator';
 import './OrderDetailPage.css';
@@ -24,8 +25,10 @@ export const OrderDetailPage: React.FC = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentToEdit, setPaymentToEdit] = useState<Payment | undefined>(undefined);
   const [isPrinting, setIsPrinting] = useState(false);
-  const printRef = React.useRef<HTMLDivElement>(null);
+
 
   const fetchOrder = async () => {
     if (!id) return;
@@ -42,6 +45,13 @@ export const OrderDetailPage: React.FC = () => {
         }
       } else {
         setInvoice(null);
+      }
+
+      try {
+        const payRes = await paymentService.getPayments({ orderId: id });
+        setPayments(payRes.data);
+      } catch (e) {
+        console.error('Failed to fetch payments:', e);
       }
     } catch (error) {
       console.error('Failed to fetch order details:', error);
@@ -96,6 +106,8 @@ export const OrderDetailPage: React.FC = () => {
     );
   }
 
+  const isCanceledByCreditNote = invoice?.invoiceType.includes('NOTA_CREDITO') ?? false;
+
   return (
     <div className="order-detail">
       <div className="order-detail__header">
@@ -108,7 +120,9 @@ export const OrderDetailPage: React.FC = () => {
           <Button variant="secondary" onClick={handlePrintPdf} disabled={isPrinting}>
             {isPrinting ? <Spinner size="sm" /> : '🖨️ Descargar PDF'}
           </Button>
-          <Button variant="secondary" onClick={() => navigate(`/pedidos/${id}/editar`)}>Editar Pedido</Button>
+          {!isCanceledByCreditNote && (
+            <Button variant="secondary" onClick={() => navigate(`/pedidos/${id}/editar`)}>Editar Pedido</Button>
+          )}
         </div>
       </div>
 
@@ -182,6 +196,7 @@ export const OrderDetailPage: React.FC = () => {
                   value={order.status}
                   onChange={(e) => handleUpdateStatus(e.target.value as OrderStatus)}
                   style={{ width: 'auto', minWidth: '200px' }}
+                  disabled={isCanceledByCreditNote}
                 >
                   <option value="RECIBIDO">Recibido</option>
                   <option value="ESPERANDO_DISENO">Esperando Diseño</option>
@@ -259,20 +274,66 @@ export const OrderDetailPage: React.FC = () => {
                   Cargado a Cuenta Corriente
                 </div>
               )}
-              {Number(order.total) - Number(order.paidAmount) > 0 && !order.chargedToAccount && (
+              {Number(order.total) - Number(order.paidAmount) > 0 && !order.chargedToAccount && !isCanceledByCreditNote && (
                 <div style={{ marginTop: 'var(--spacing-4)' }}>
-                  <Button variant="primary" style={{ width: '100%' }} onClick={() => setIsPaymentModalOpen(true)}>
+                  <Button variant="primary" style={{ width: '100%' }} onClick={() => { setPaymentToEdit(undefined); setIsPaymentModalOpen(true); }}>
                     Registrar Pago
                   </Button>
                 </div>
               )}
 
               <div style={{ marginTop: 'var(--spacing-4)', paddingTop: 'var(--spacing-4)', borderTop: '1px solid var(--color-border)' }}>
+                <h4 style={{ marginBottom: 'var(--spacing-3)', fontSize: '0.875rem' }}>Pagos Registrados</h4>
+                {payments.length === 0 ? (
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>No hay pagos registrados.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {payments.map(payment => (
+                      <div key={payment.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', border: '1px solid var(--color-border)', borderRadius: '4px' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold' }}>${Number(payment.amount).toLocaleString()}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{payment.method} - {new Date(payment.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        {!isCanceledByCreditNote && (
+                          <Button variant="ghost" size="sm" onClick={() => { setPaymentToEdit(payment); setIsPaymentModalOpen(true); }}>
+                            ✏️ Editar
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: 'var(--spacing-4)', paddingTop: 'var(--spacing-4)', borderTop: '1px solid var(--color-border)' }}>
                 <h4 style={{ marginBottom: 'var(--spacing-3)', fontSize: '0.875rem' }}>Facturación AFIP</h4>
                 {invoice ? (
                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                     <div style={{ fontSize: '0.875rem', color: 'var(--color-success)', fontWeight: 500 }}>Factura generada: {invoice.invoiceNumber}</div>
-                     <DownloadInvoicePdfButton invoice={invoice} />
+                     <div style={{ fontSize: '0.875rem', color: invoice.invoiceType.includes('NOTA_CREDITO') ? 'var(--color-warning-dark)' : 'var(--color-success)', fontWeight: 500 }}>
+                       {invoice.invoiceType.includes('NOTA_CREDITO') ? 'Nota de Crédito generada:' : 'Factura generada:'} {invoice.invoiceNumber}
+                     </div>
+                     <div style={{ display: 'flex', gap: '8px' }}>
+                       <DownloadInvoicePdfButton invoice={invoice} />
+                       {!invoice.invoiceType.includes('NOTA_CREDITO') && (
+                         <Button 
+                           variant="danger" 
+                           size="sm" 
+                           onClick={async () => {
+                             if (window.confirm('¿Está seguro de anular esta factura generando una Nota de Crédito AFIP por el monto total?')) {
+                               try {
+                                 await invoiceService.generateCreditNote(invoice.id);
+                                 alert('Nota de Crédito generada exitosamente');
+                                 fetchOrder();
+                               } catch (err: any) {
+                                 alert(err.response?.data?.message || 'Error al generar Nota de Crédito');
+                               }
+                             }
+                           }}
+                         >
+                           Anular (Generar NC)
+                         </Button>
+                       )}
+                     </div>
                    </div>
                 ) : (order.status === 'TERMINADO' || order.status === 'ENTREGADO') ? (
                    <Button variant="secondary" style={{ width: '100%' }} onClick={() => setIsInvoiceModalOpen(true)}>
@@ -291,10 +352,11 @@ export const OrderDetailPage: React.FC = () => {
 
       <PaymentFormModal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
+        onClose={() => { setIsPaymentModalOpen(false); setPaymentToEdit(undefined); }}
         clientId={order.clientId}
         orderId={order.id}
         suggestedAmount={Number(order.total) - Number(order.paidAmount)}
+        paymentToEdit={paymentToEdit}
         onSuccess={fetchOrder}
       />
 

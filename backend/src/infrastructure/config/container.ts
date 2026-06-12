@@ -36,8 +36,10 @@ import { ListQuotesUseCase } from '../../application/use-cases/quotes/ListQuotes
 import { GetQuoteUseCase } from '../../application/use-cases/quotes/GetQuoteUseCase';
 import { ConvertQuoteToOrderUseCase } from '../../application/use-cases/quotes/ConvertQuoteToOrderUseCase';
 import { RegisterPaymentUseCase } from '../../application/use-cases/payments/RegisterPaymentUseCase';
+import { UpdatePaymentUseCase } from '../../application/use-cases/payments/UpdatePaymentUseCase';
 import { GetClientStatementUseCase } from '../../application/use-cases/accounts/GetClientStatementUseCase';
 import { GenerateInvoiceUseCase } from '../../application/use-cases/invoices/GenerateInvoiceUseCase';
+import { GenerateCreditNoteUseCase } from '../../application/use-cases/invoices/GenerateCreditNoteUseCase';
 
 // Repositorios
 export const userRepository = new PrismaUserRepository(prisma);
@@ -85,10 +87,12 @@ export const convertQuoteToOrderUseCase = new ConvertQuoteToOrderUseCase(quoteRe
 
 // Payments & Accounts UseCases
 export const registerPaymentUseCase = new RegisterPaymentUseCase(accountService);
+export const updatePaymentUseCase = new UpdatePaymentUseCase(accountService);
 export const getClientStatementUseCase = new GetClientStatementUseCase(accountMovementRepository, clientRepository);
 
 // Invoices UseCases
 export const generateInvoiceUseCase = new GenerateInvoiceUseCase(invoiceRepository, invoicingService, prisma);
+export const generateCreditNoteUseCase = new GenerateCreditNoteUseCase(invoiceRepository, invoicingService, prisma);
 
 export const container = {
   prisma,
@@ -128,8 +132,10 @@ export const container = {
     getQuoteUseCase,
     convertQuoteToOrderUseCase,
     registerPaymentUseCase,
+    updatePaymentUseCase,
     getClientStatementUseCase,
-    generateInvoiceUseCase
+    generateInvoiceUseCase,
+    generateCreditNoteUseCase
   },
   resolve(key: string) {
     const dependencies: any = {
